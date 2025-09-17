@@ -21,10 +21,11 @@ export class AuthService {
   ) {}
 
   async validateUser(
-    username: string,
+    email: string,
     password: string,
   ): Promise<UserPayload | null> {
-    const user = await this.usersService.findOne(username);
+    const user = await this.usersService.findByEmail(email);
+    console.log('user', user);
     if (user && (await user.validatePassword(password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...result } = user;
@@ -34,7 +35,7 @@ export class AuthService {
   }
 
   private login(user: UserPayload): any {
-    const payload = { username: user.username, sub: user.id };
+    const payload = { email: user.email, sub: user.id };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -47,8 +48,9 @@ export class AuthService {
     };
   }
 
-  async signIn(username: string, password: string): Promise<any> {
-    const user = await this.validateUser(username, password);
+  async signIn(email: string, password: string): Promise<any> {
+    // console.log('signIn', username, password);
+    const user = await this.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
